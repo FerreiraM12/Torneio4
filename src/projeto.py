@@ -57,5 +57,67 @@ alturas projetadas para todos os lotes.
 
 '''
 
-def projeto(m,t,b,l,r):
+
+def projeto(m, t, b, l, r):
+    objeto = bairro(m, t, b, l, r)
+    res = objeto.isValid()
+    print(res)
     return m
+
+
+# Substitui o None por 0
+def noneToZeroM(m):
+    for i, row in enumerate(m):
+        for j, elem in enumerate(row):
+            if elem is None:
+                m[i][j] = 0
+    return m
+
+
+def noneToZeroL(m):
+    for i, row in enumerate(m):
+        if row is None:
+            m[i] = 0
+    return m
+
+
+class bairro:
+    def __init__(self, m, t, b, l, r):
+        self.m = noneToZeroM(m)
+        self.t = noneToZeroL(t)
+        self.b = noneToZeroL(b)
+        self.l = noneToZeroL(l)
+        self.r = noneToZeroL(r)
+
+    def getBairro(self):
+        return self.m
+
+    #  t: N -> S       t
+    #  b: S -> N     l m r
+    #  l: O -> E       b
+    #  r: E -> O
+    def isValid(self):  # m[linha][coluna]
+
+        #  Norte para Sul
+        for i, vis in enumerate(self.t):  # analisa uma coluna de cada vez
+            tallest = 0  # variavel que vai atualizando sempre que encontra um edificio maior
+            visible = vis  # numero de edificios que tem de estar visiveis
+            for j in range(len(self.m)):
+                if self.m[j][i] > tallest:
+                    tallest = self.m[j][i]
+                    visible -= 1
+            if visible != 0:
+                return False
+
+        #  Sul para Norte
+        for i, vis in enumerate(self.b):
+            tallest = 0
+            visible = vis
+            for j in range(len(self.m) - 1, -1, -1):
+                if self.m[j][i] > tallest:
+                    tallest = self.m[j][i]
+                    visible -= 1
+            if visible != 0:
+                return False
+
+        return True
