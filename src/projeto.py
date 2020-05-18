@@ -120,4 +120,26 @@ class bairro:
             if visible != 0:
                 return False
 
+        #  Oeste para Este
+        for i, vis in enumerate(self.l):
+            tallest = 0
+            visible = vis
+            for j in range(len(self.l)):
+                if self.m[i][j] > tallest:
+                    tallest = self.m[i][j]
+                    visible -= 1
+            if visible != 0:
+                return False
+
+        #  Este para Oeste
+        for i, vis in enumerate(self.r):
+            tallest = 0
+            visible = vis
+            for j in range(len(self.r) - 1, -1, -1):
+                if self.m[i][j] > tallest:
+                    tallest = self.m[i][j]
+                    visible -= 1
+            if visible != 0:
+                return False
+
         return True
