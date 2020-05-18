@@ -57,7 +57,7 @@ alturas projetadas para todos os lotes.
 
 '''
 
-
+# Funcao chamada pela main
 def projeto(m, t, b, l, r):
     objeto = bairro(m, t, b, l, r)
     res = objeto.isValid()
@@ -65,7 +65,7 @@ def projeto(m, t, b, l, r):
     return m
 
 
-# Substitui o None por 0
+#  Substitui o None por 0
 def noneToZeroM(m):
     for i, row in enumerate(m):
         for j, elem in enumerate(row):
@@ -82,6 +82,8 @@ def noneToZeroL(m):
 
 
 class bairro:
+
+    #  Construtor
     def __init__(self, m, t, b, l, r):
         self.m = noneToZeroM(m)
         self.t = noneToZeroL(t)
@@ -89,57 +91,41 @@ class bairro:
         self.l = noneToZeroL(l)
         self.r = noneToZeroL(r)
 
+    #  Getter
     def getBairro(self):
         return self.m
 
-    #  t: N -> S       t
-    #  b: S -> N     l m r
-    #  l: O -> E       b
-    #  r: E -> O
-    def isValid(self):  # m[linha][coluna]
+    #  Verifica se o bairro cumpre as condicoes de de visibilidade
+    # 1  t: N -> S       t
+    # 2  b: S -> N     l m r
+    # 3  l: O -> E       b
+    # 4  r: E -> O
+    def __isValidAux(self, n, d):  # n -> (t, b, l, ou r) d -> (1-4)
 
-        #  Norte para Sul
-        for i, vis in enumerate(self.t):  # analisa uma coluna de cada vez
-            tallest = 0  # variavel que vai atualizando sempre que encontra um edificio maior
-            visible = vis  # numero de edificios que tem de estar visiveis
-            for j in range(len(self.m)):
-                if self.m[j][i] > tallest:
-                    tallest = self.m[j][i]
-                    visible -= 1
-            if visible != 0:
-                return False
+        if d == 1 or d == 3:
+            inicio = 0
+            fim = len(n)
+            sinal = 1
+        elif d == 2 or d == 4:
+            inicio = len(n) - 1
+            fim = -1
+            sinal = -1
 
-        #  Sul para Norte
-        for i, vis in enumerate(self.b):
+        for i, vis in enumerate(n):
             tallest = 0
-            visible = vis
-            for j in range(len(self.m) - 1, -1, -1):
-                if self.m[j][i] > tallest:
-                    tallest = self.m[j][i]
-                    visible -= 1
-            if visible != 0:
+            for j in range(inicio, fim, sinal):
+                if d == 1 or d == 2:
+                    if self.m[j][i] > tallest:
+                        tallest = self.m[j][i]
+                        vis -= 1
+                else:
+                    if self.m[i][j] > tallest:
+                        tallest = self.m[i][j]
+                        vis -= 1
+            if vis != 0:
                 return False
-
-        #  Oeste para Este
-        for i, vis in enumerate(self.l):
-            tallest = 0
-            visible = vis
-            for j in range(len(self.l)):
-                if self.m[i][j] > tallest:
-                    tallest = self.m[i][j]
-                    visible -= 1
-            if visible != 0:
-                return False
-
-        #  Este para Oeste
-        for i, vis in enumerate(self.r):
-            tallest = 0
-            visible = vis
-            for j in range(len(self.r) - 1, -1, -1):
-                if self.m[i][j] > tallest:
-                    tallest = self.m[i][j]
-                    visible -= 1
-            if visible != 0:
-                return False
-
         return True
+
+    def isValid(self):
+        return self.__isValidAux(self.t, 1) and self.__isValidAux(self.b, 2) and \
+               self.__isValidAux(self.l, 3) and self.__isValidAux(self.r, 4)
