@@ -1,4 +1,4 @@
-'''
+"""
 
 Neste torneio pretende-se que implemente um programa que ajude um arquiteto a
 planear os prédios a construir num bairro.
@@ -55,7 +55,8 @@ A função a implementar recebe 5 parâmetros:
 A função deverá devolver uma matriz quadrada (representada por uma lista de listas) com as
 alturas projetadas para todos os lotes.
 
-'''
+"""
+
 
 # Funcao chamada pela main
 def projeto(m, t, b, l, r):
@@ -67,10 +68,8 @@ def projeto(m, t, b, l, r):
 
 #  Substitui o None por 0
 def noneToZeroM(m):
-    for i, row in enumerate(m):
-        for j, elem in enumerate(row):
-            if elem is None:
-                m[i][j] = 0
+    for row in m:
+        noneToZeroL(row)
     return m
 
 
@@ -106,7 +105,7 @@ class bairro:
             inicio = 0
             fim = len(n)
             sinal = 1
-        elif d == 2 or d == 4:
+        else:
             inicio = len(n) - 1
             fim = -1
             sinal = -1
@@ -114,14 +113,12 @@ class bairro:
         for i, vis in enumerate(n):
             tallest = 0
             for j in range(inicio, fim, sinal):
-                if d == 1 or d == 2:
-                    if self.m[j][i] > tallest:
-                        tallest = self.m[j][i]
-                        vis -= 1
-                else:
-                    if self.m[i][j] > tallest:
-                        tallest = self.m[i][j]
-                        vis -= 1
+                if (d == 1 or d == 2) and self.m[j][i] > tallest:
+                    tallest = self.m[j][i]
+                    vis -= 1
+                elif self.m[i][j] > tallest:
+                    tallest = self.m[i][j]
+                    vis -= 1
             if vis != 0:
                 return False
         return True
