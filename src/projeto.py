@@ -57,14 +57,14 @@ alturas projetadas para todos os lotes.
 
 """
 
-# Funcao chamada pela main
 import copy
 
 
+# Funcao chamada pela main
 def projeto(m, t, b, l, r):
-    objeto = bairro(m, t, b, l, r)
-    objeto.solve()
-    m = objeto.listaSol[0]  # Devolve uma das possiveis solucoes
+    objBairro = bairro(m, t, b, l, r)
+    objBairro.solve()
+    m = objBairro.listaSol[0]  # Devolve uma das possiveis solucoes
     return m
 
 
@@ -131,10 +131,7 @@ class bairro:
     #  Confirma se um dado predio cumpre a regra de altura unica na sua linha e coluna
     def isPossible(self, y, x, n):
         for i in range(len(self.m)):
-            if self.m[y][i] == n:
-                return False
-        for i in range(len(self.m)):
-            if self.m[i][x] == n:
+            if self.m[y][i] == n or self.m[i][x] == n:
                 return False
         return True
 
