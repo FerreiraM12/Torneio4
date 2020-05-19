@@ -24,17 +24,16 @@ def aux(d):
 
 def main():
     print("<h3>projeto</h3>")
-    m = [[1, 2, 3, 4],
-         [3, 4, 1, 2],
-         [2, 3, 4, 1],
-         [4, 1, 2, 3]]
-    v = ([3, 2, 2, 1], [1, 3, 2, 2], [4, 2, 3, 1], [1, 2, 2, 2])
+    m = [[None, None, None, None],
+         [None, 4, None, None],
+         [None, None, None, None],
+         [None, None, None, 3]]
+    v = ([3, None, None, 1], [None, None, 2, None], [None, None, None, 1], [None, 2, None, None])
     print("in:")
     imprime(m, *v)
     print("out:")
     r = projeto(m, *v)
-    # imprime(r, *v)
-    print(r)
+    imprime(r, *v)
 
 
 if __name__ == '__main__':

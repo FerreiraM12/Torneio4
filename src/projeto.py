@@ -57,12 +57,14 @@ alturas projetadas para todos os lotes.
 
 """
 
-
 # Funcao chamada pela main
+import copy
+
+
 def projeto(m, t, b, l, r):
     objeto = bairro(m, t, b, l, r)
-    res = objeto.isValid()
-    print(res)
+    objeto.solve()
+    m = objeto.listaSol[0]  # Devolve uma das possiveis solucoes
     return m
 
 
@@ -74,8 +76,8 @@ def noneToZeroM(m):
 
 
 def noneToZeroL(m):
-    for i, row in enumerate(m):
-        if row is None:
+    for i, elem in enumerate(m):
+        if elem is None:
             m[i] = 0
     return m
 
@@ -89,10 +91,7 @@ class bairro:
         self.b = noneToZeroL(b)
         self.l = noneToZeroL(l)
         self.r = noneToZeroL(r)
-
-    #  Getter
-    def getBairro(self):
-        return self.m
+        self.listaSol = []
 
     #  Verifica se o bairro cumpre as condicoes de de visibilidade
     # 1  t: N -> S       t
@@ -111,6 +110,8 @@ class bairro:
             sinal = -1
 
         for i, vis in enumerate(n):
+            if vis == 0:
+                continue
             tallest = 0
             for j in range(inicio, fim, sinal):
                 if (d == 1 or d == 2) and self.m[j][i] > tallest:
@@ -126,3 +127,27 @@ class bairro:
     def isValid(self):
         return self.__isValidAux(self.t, 1) and self.__isValidAux(self.b, 2) and \
                self.__isValidAux(self.l, 3) and self.__isValidAux(self.r, 4)
+
+    #  Confirma se um dado predio cumpre a regra de altura unica na sua linha e coluna
+    def isPossible(self, y, x, n):
+        for i in range(len(self.m)):
+            if self.m[y][i] == n:
+                return False
+        for i in range(len(self.m)):
+            if self.m[i][x] == n:
+                return False
+        return True
+
+    #  Utiliza o isPossible com backtracking para gerar possiveis configuracoes que cumprem as alturas unicas
+    def solve(self):
+        for y in range(len(self.m)):
+            for x in range(len(self.m)):
+                if self.m[y][x] == 0:
+                    for n in range(1, len(self.m) + 1):
+                        if self.isPossible(y, x, n):
+                            self.m[y][x] = n
+                            self.solve()
+                            self.m[y][x] = 0
+                    return
+        if self.isValid():
+            self.listaSol.append(copy.deepcopy(self.m))
