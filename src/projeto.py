@@ -62,89 +62,173 @@ import copy
 
 # Funcao chamada pela main
 def projeto(m, t, b, l, r):
-    objBairro = bairro(m, t, b, l, r)
-    objBairro.solve()
-    m = objBairro.listaSol[0]  # Devolve uma das possiveis solucoes
-    return m
-
-
-#  Substitui o None por 0
-def noneToZeroM(m):
-    for row in m:
-        noneToZeroL(row)
-    return m
-
-
-def noneToZeroL(m):
-    for i, elem in enumerate(m):
-        if elem is None:
-            m[i] = 0
+    ex = bairro(m, t, b, l, r)
+    casosImediatos(ex)
+    m = solve(ex)
     return m
 
 
 class bairro:
+    def __init__(self, mapa, ns, sn, oe, eo):
+        self.mapa = mapa
+        self.ns = ns
+        self.sn = sn
+        self.oe = oe
+        self.eo = eo
 
-    #  Construtor
-    def __init__(self, m, t, b, l, r):
-        self.m = noneToZeroM(m)
-        self.t = noneToZeroL(t)
-        self.b = noneToZeroL(b)
-        self.l = noneToZeroL(l)
-        self.r = noneToZeroL(r)
-        self.listaSol = []
+    def col(self, x):
+        return [row[x] for row in self.mapa]
 
-    #  Verifica se o bairro cumpre as condicoes de de visibilidade
-    # 1  t: N -> S       t
-    # 2  b: S -> N     l m r
-    # 3  l: O -> E       b
-    # 4  r: E -> O
-    def __isValidAux(self, n, d):  # n -> (t, b, l, ou r) d -> (1-4)
+    def row(self, y):
+        return self.mapa[y]
 
-        if d == 1 or d == 3:
-            inicio = 0
-            fim = len(n)
-            sinal = 1
-        else:
-            inicio = len(n) - 1
-            fim = -1
-            sinal = -1
+    def vis(self, y, x):
+        return self.ns[x], self.sn[x], self.oe[y], self.eo[y]
 
-        for i, vis in enumerate(n):
-            if vis == 0:
+    def visNS(self, x):
+        return self.ns[x]
+
+    def visSN(self, x):
+        return self.sn[x]
+
+    def visOE(self, y):
+        return self.oe[y]
+
+    def visEO(self, y):
+        return self.eo[y]
+
+    def point(self, y, x):
+        return self.mapa[y][x]
+
+    def dim(self):
+        return len(self.mapa)
+
+    def setPoint(self, y, x, a):
+        self.mapa[y][x] = a
+
+    def setCol(self, lista, x):
+        for i, row in enumerate(self.mapa):
+            row[x] = lista[i]
+
+    def setRow(self, row, y):
+        self.mapa[y] = row
+
+
+def casosImediatos(ex):
+    for i, v in enumerate(ex.ns):
+        if v == ex.dim():
+            ex.setCol(list(range(1, ex.dim() + 1)), i)
+        elif v == 1:
+            ex.setPoint(0, i, ex.dim())
+    for i, v in enumerate(ex.sn):
+        if v == ex.dim():
+            ex.setCol(list(range(ex.dim(), 0, -1)), i)
+        elif v == 1:
+            ex.setPoint(ex.dim() - 1, i, ex.dim())
+    for i, v in enumerate(ex.oe):
+        if v == ex.dim():
+            ex.setRow(list(range(1, ex.dim() + 1)), i)
+        elif v == 1:
+            ex.setPoint(i, 0, ex.dim())
+    for i, v in enumerate(ex.eo):
+        if v == ex.dim():
+            ex.setRow(list(range(ex.dim(), 0, -1)), i)
+        elif v == 1:
+            ex.setPoint(i, ex.dim() - 1, ex.dim())
+
+
+def ultrapassaVis(ex, line, c, f):
+    if f == 0:
+        vis1 = ex.visOE(c)
+        vis2 = ex.visEO(c)
+    else:
+        vis1 = ex.visNS(c)
+        vis2 = ex.visSN(c)
+    tallest = 0
+    if vis1 is not None:
+        for i in line:
+            if i is None:
                 continue
-            tallest = 0
-            for j in range(inicio, fim, sinal):
-                if (d == 1 or d == 2) and self.m[j][i] > tallest:
-                    tallest = self.m[j][i]
-                    vis -= 1
-                elif self.m[i][j] > tallest:
-                    tallest = self.m[i][j]
-                    vis -= 1
-            if vis != 0:
-                return False
-        return True
+            if tallest < i:
+                tallest = i
+                vis1 -= 1
+        if vis1 < 0:
+            return True
+    if vis2 is not None:
+        tallest = 0
+        line = line[::-1]
+        for i in line:
+            if i is None:
+                continue
+            if tallest < i:
+                tallest = i
+                vis2 -= 1
+        if vis2 < 0:
+            return True
+    return False
 
-    def isValid(self):
-        return self.__isValidAux(self.t, 1) and self.__isValidAux(self.b, 2) and \
-               self.__isValidAux(self.l, 3) and self.__isValidAux(self.r, 4)
 
-    #  Confirma se um dado predio cumpre a regra de altura unica na sua linha e coluna
-    def isPossible(self, y, x, n):
-        for i in range(len(self.m)):
-            if self.m[y][i] == n or self.m[i][x] == n:
-                return False
-        return True
+def isPossible(ex, y, x, n):
+    for i in range(ex.dim()):
+        if ex.mapa[y][i] == n or ex.mapa[i][x] == n:
+            return False
+        #  row
+    row = list(ex.row(y))
+    row[x] = n
+    if ultrapassaVis(ex, row, y, 0):
+        return False
+    #  col
+    col = list(ex.col(x))
+    col[y] = n
+    if ultrapassaVis(ex, col, x, 1):
+        return False
+    return True
 
-    #  Utiliza o isPossible com backtracking para gerar possiveis configuracoes que cumprem as alturas unicas
-    def solve(self):
-        for y in range(len(self.m)):
-            for x in range(len(self.m)):
-                if self.m[y][x] == 0:
-                    for n in range(1, len(self.m) + 1):
-                        if self.isPossible(y, x, n):
-                            self.m[y][x] = n
-                            self.solve()
-                            self.m[y][x] = 0
-                    return
-        if self.isValid():
-            self.listaSol.append(copy.deepcopy(self.m))
+
+def isValidAux(ex, n, d):  # n -> (t, b, l, ou r) d -> (1-4)
+
+    if d == 1 or d == 3:
+        inicio = 0
+        fim = len(n)
+        sinal = 1
+    else:
+        inicio = len(n) - 1
+        fim = -1
+        sinal = -1
+
+    for i, vis in enumerate(n):
+        if vis is None:
+            continue
+        tallest = 0
+        for j in range(inicio, fim, sinal):
+            if (d == 1 or d == 2) and ex.mapa[j][i] > tallest:
+                tallest = ex.mapa[j][i]
+                vis -= 1
+            elif ex.mapa[i][j] > tallest:
+                tallest = ex.mapa[i][j]
+                vis -= 1
+        if vis != 0:
+            return False
+    return True
+
+
+def isValid(ex):
+    return isValidAux(ex, ex.ns, 1) and isValidAux(ex, ex.sn, 2) and \
+           isValidAux(ex, ex.oe, 3) and isValidAux(ex, ex.eo, 4)
+
+
+def solve(ex):
+    for y in range(ex.dim()):
+        for x in range(ex.dim()):
+            if ex.point(y, x) is None:
+                for n in range(1, ex.dim() + 1):
+                    if isPossible(ex, y, x, n):
+                        ex.setPoint(y, x, n)
+                        sol = solve(ex)
+                        if sol is not None:
+                            return sol
+                        ex.setPoint(y, x, None)
+                return
+    if isValid(ex):
+        sol = (copy.deepcopy(ex.mapa))
+        return sol
