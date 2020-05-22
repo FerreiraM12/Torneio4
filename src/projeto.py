@@ -84,18 +84,6 @@ class bairro:
     def row(self, y):
         return self.mapa[y]
 
-    def visNS(self, x):
-        return self.ns[x]
-
-    def visSN(self, x):
-        return self.sn[x]
-
-    def visOE(self, y):
-        return self.oe[y]
-
-    def visEO(self, y):
-        return self.eo[y]
-
     def setCol(self, lista, x):
         for i, row in enumerate(self.mapa):
             row[x] = lista[i]
@@ -159,11 +147,11 @@ def fillTheGap(ex):
 
 def ultrapassaVis(ex, line, c, f):
     if f == 0:
-        vis1 = ex.visOE(c)
-        vis2 = ex.visEO(c)
+        vis1 = ex.oe[c]
+        vis2 = ex.eo[c]
     else:
-        vis1 = ex.visNS(c)
-        vis2 = ex.visSN(c)
+        vis1 = ex.ns[c]
+        vis2 = ex.sn[c]
     tallest = 0
     if vis1 is not None and vis1 > 1:
         for i in line:
