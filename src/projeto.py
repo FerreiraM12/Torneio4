@@ -64,6 +64,7 @@ import copy
 def projeto(m, t, b, l, r):
     ex = bairro(m, t, b, l, r)
     casosImediatos(ex)
+    fillTheGap(ex)
     m = solve(ex)
     return m
 
@@ -137,6 +138,36 @@ def casosImediatos(ex):
             ex.setPoint(i, ex.dim() - 1, ex.dim())
 
 
+def fillTheGap(ex):
+    for i in range(ex.dim()):
+
+        #  Verifica as linhas
+        emptyLots = 0
+        for lote in ex.row(i):
+            if lote is None:
+                emptyLots += 1
+        if emptyLots == 1:
+            for height in range(1, ex.dim() + 1):
+                if height in ex.row(i):
+                    continue
+                missingHeight = height
+            rowFilled = [missingHeight if x is None else x for x in ex.row(i)]
+            ex.setRow(rowFilled, i)
+
+        #  Verifica as colunas
+        emptyLots = 0
+        for lote in ex.col(i):
+            if lote is None:
+                emptyLots += 1
+        if emptyLots == 1:
+            for height in range(1, ex.dim() + 1):
+                if height in ex.col(i):
+                    continue
+                missingHeight = height
+            colFilled = [missingHeight if x is None else x for x in ex.col(i)]
+            ex.setCol(colFilled, i)
+
+
 def ultrapassaVis(ex, line, c, f):
     if f == 0:
         vis1 = ex.visOE(c)
@@ -148,7 +179,7 @@ def ultrapassaVis(ex, line, c, f):
     if vis1 is not None:
         for i in line:
             if i is None:
-                continue
+                break
             if tallest < i:
                 tallest = i
                 vis1 -= 1
@@ -159,7 +190,7 @@ def ultrapassaVis(ex, line, c, f):
         line = line[::-1]
         for i in line:
             if i is None:
-                continue
+                break
             if tallest < i:
                 tallest = i
                 vis2 -= 1
@@ -172,7 +203,7 @@ def isPossible(ex, y, x, n):
     for i in range(ex.dim()):
         if ex.mapa[y][i] == n or ex.mapa[i][x] == n:
             return False
-        #  row
+    #  row
     row = list(ex.row(y))
     row[x] = n
     if ultrapassaVis(ex, row, y, 0):
@@ -204,7 +235,7 @@ def isValidAux(ex, n, d):  # n -> (t, b, l, ou r) d -> (1-4)
             if (d == 1 or d == 2) and ex.mapa[j][i] > tallest:
                 tallest = ex.mapa[j][i]
                 vis -= 1
-            elif ex.mapa[i][j] > tallest:
+            elif (d == 3 or d == 4) and ex.mapa[i][j] > tallest:
                 tallest = ex.mapa[i][j]
                 vis -= 1
         if vis != 0:
