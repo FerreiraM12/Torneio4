@@ -76,15 +76,13 @@ class bairro:
         self.sn = sn
         self.oe = oe
         self.eo = eo
+        self.dim = len(self.mapa)
 
     def col(self, x):
         return [row[x] for row in self.mapa]
 
     def row(self, y):
         return self.mapa[y]
-
-    def vis(self, y, x):
-        return self.ns[x], self.sn[x], self.oe[y], self.eo[y]
 
     def visNS(self, x):
         return self.ns[x]
@@ -98,15 +96,6 @@ class bairro:
     def visEO(self, y):
         return self.eo[y]
 
-    def point(self, y, x):
-        return self.mapa[y][x]
-
-    def dim(self):
-        return len(self.mapa)
-
-    def setPoint(self, y, x, a):
-        self.mapa[y][x] = a
-
     def setCol(self, lista, x):
         for i, row in enumerate(self.mapa):
             row[x] = lista[i]
@@ -117,29 +106,29 @@ class bairro:
 
 def casosImediatos(ex):
     for i, v in enumerate(ex.ns):
-        if v == ex.dim():
-            ex.setCol(list(range(1, ex.dim() + 1)), i)
+        if v == ex.dim:
+            ex.setCol(list(range(1, ex.dim + 1)), i)
         elif v == 1:
-            ex.setPoint(0, i, ex.dim())
+            ex.mapa[0][i] = ex.dim
     for i, v in enumerate(ex.sn):
-        if v == ex.dim():
-            ex.setCol(list(range(ex.dim(), 0, -1)), i)
+        if v == ex.dim:
+            ex.setCol(list(range(ex.dim, 0, -1)), i)
         elif v == 1:
-            ex.setPoint(ex.dim() - 1, i, ex.dim())
+            ex.mapa[ex.dim - 1][i] = ex.dim
     for i, v in enumerate(ex.oe):
-        if v == ex.dim():
-            ex.setRow(list(range(1, ex.dim() + 1)), i)
+        if v == ex.dim:
+            ex.setRow(list(range(1, ex.dim + 1)), i)
         elif v == 1:
-            ex.setPoint(i, 0, ex.dim())
+            ex.mapa[i][0] = ex.dim
     for i, v in enumerate(ex.eo):
-        if v == ex.dim():
-            ex.setRow(list(range(ex.dim(), 0, -1)), i)
+        if v == ex.dim:
+            ex.setRow(list(range(ex.dim, 0, -1)), i)
         elif v == 1:
-            ex.setPoint(i, ex.dim() - 1, ex.dim())
+            ex.mapa[i][ex.dim - 1] = ex.dim
 
 
 def fillTheGap(ex):
-    for i in range(ex.dim()):
+    for i in range(ex.dim):
 
         #  Verifica as linhas
         emptyLots = 0
@@ -147,7 +136,7 @@ def fillTheGap(ex):
             if lote is None:
                 emptyLots += 1
         if emptyLots == 1:
-            for height in range(1, ex.dim() + 1):
+            for height in range(1, ex.dim + 1):
                 if height in ex.row(i):
                     continue
                 missingHeight = height
@@ -160,7 +149,7 @@ def fillTheGap(ex):
             if lote is None:
                 emptyLots += 1
         if emptyLots == 1:
-            for height in range(1, ex.dim() + 1):
+            for height in range(1, ex.dim + 1):
                 if height in ex.col(i):
                     continue
                 missingHeight = height
@@ -176,7 +165,7 @@ def ultrapassaVis(ex, line, c, f):
         vis1 = ex.visNS(c)
         vis2 = ex.visSN(c)
     tallest = 0
-    if vis1 is not None:
+    if vis1 is not None and vis1 > 1:
         for i in line:
             if i is None:
                 break
@@ -185,7 +174,7 @@ def ultrapassaVis(ex, line, c, f):
                 vis1 -= 1
         if vis1 < 0:
             return True
-    if vis2 is not None:
+    if vis2 is not None and vis2 > 1:
         tallest = 0
         line = line[::-1]
         for i in line:
@@ -200,7 +189,7 @@ def ultrapassaVis(ex, line, c, f):
 
 
 def isPossible(ex, y, x, n):
-    for i in range(ex.dim()):
+    for i in range(ex.dim):
         if ex.mapa[y][i] == n or ex.mapa[i][x] == n:
             return False
     #  row
@@ -249,16 +238,16 @@ def isValid(ex):
 
 
 def solve(ex):
-    for y in range(ex.dim()):
-        for x in range(ex.dim()):
-            if ex.point(y, x) is None:
-                for n in range(1, ex.dim() + 1):
+    for y in range(ex.dim):
+        for x in range(ex.dim):
+            if ex.mapa[y][x] is None:
+                for n in range(1, ex.dim + 1):
                     if isPossible(ex, y, x, n):
-                        ex.setPoint(y, x, n)
+                        ex.mapa[y][x] = n
                         sol = solve(ex)
                         if sol is not None:
                             return sol
-                        ex.setPoint(y, x, None)
+                        ex.mapa[y][x] = None
                 return
     if isValid(ex):
         sol = (copy.deepcopy(ex.mapa))
