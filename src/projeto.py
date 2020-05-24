@@ -57,15 +57,12 @@ alturas projetadas para todos os lotes.
 
 """
 
-import copy
-
 
 # Funcao chamada pela main
 def projeto(m, t, b, l, r):
     ex = bairro(m, t, b, l, r)
     casosImediatos(ex)
-    fillTheGap(ex)
-    m = solve(ex, 0)
+    m = solve(ex, 0, 0)
     return m
 
 
@@ -77,6 +74,7 @@ class bairro:
         self.oe = oe
         self.eo = eo
         self.dim = len(self.mapa)
+        self.possiveis = matrizAlturasPossiveis(self)
 
     def col(self, x):
         return [row[x] for row in self.mapa]
@@ -115,34 +113,64 @@ def casosImediatos(ex):
             ex.mapa[i][ex.dim - 1] = ex.dim
 
 
-def fillTheGap(ex):
-    for i in range(ex.dim):
+def intersection(lst1, lst2):
+    return list(set(lst1) & set(lst2))
 
-        #  Verifica as linhas
-        emptyLots = 0
-        for lote in ex.row(i):
-            if lote is None:
-                emptyLots += 1
-        if emptyLots == 1:
-            for height in range(1, ex.dim + 1):
-                if height in ex.row(i):
-                    continue
-                missingHeight = height
-            rowFilled = [missingHeight if x is None else x for x in ex.row(i)]
-            ex.setRow(rowFilled, i)
 
-        #  Verifica as colunas
-        emptyLots = 0
-        for lote in ex.col(i):
-            if lote is None:
-                emptyLots += 1
-        if emptyLots == 1:
-            for height in range(1, ex.dim + 1):
-                if height in ex.col(i):
-                    continue
-                missingHeight = height
-            colFilled = [missingHeight if x is None else x for x in ex.col(i)]
-            ex.setCol(colFilled, i)
+def matrizAlturasPossiveis(ex):
+    n = ex.dim
+    matriz = []
+    for y in range(ex.dim):
+        matriz.append([])
+        for x in range(ex.dim):
+            alturasPossiveisNS = []
+            c = ex.ns[x]
+            if c is None:
+                alturasPossiveisNS = list(range(1, n + 1))
+            else:
+                d = y
+                ap = n - c + 1 + d
+                for i in range(1, ap + 1):
+                    alturasPossiveisNS.append(i)
+
+            alturasPossiveisSN = []
+            c = ex.sn[x]
+            if c is None:
+                alturasPossiveisSN = list(range(1, n + 1))
+            else:
+                d = n - y - 1
+                ap = n - c + 1 + d
+                if ap > n:
+                    ap = n
+                for i in range(1, ap + 1):
+                    alturasPossiveisSN.append(i)
+
+            alturasPossiveisOE = []
+            c = ex.oe[y]
+            if c is None:
+                alturasPossiveisOE = list(range(1, n + 1))
+            else:
+                d = x
+                ap = n - c + 1 + d
+                for i in range(1, ap + 1):
+                    alturasPossiveisOE.append(i)
+
+            alturasPossiveisEO = []
+            c = ex.eo[y]
+            if c is None:
+                alturasPossiveisEO = list(range(1, n + 1))
+            else:
+                d = n - x - 1
+                ap = n - c + 1 + d
+                if ap > n:
+                    ap = n
+                for i in range(1, ap + 1):
+                    alturasPossiveisEO.append(i)
+
+            alturasPossiveis = intersection(intersection(alturasPossiveisNS, alturasPossiveisSN),
+                                            intersection(alturasPossiveisOE, alturasPossiveisEO))
+            matriz[y].append(alturasPossiveis)
+    return matriz
 
 
 def ultrapassaVis(ex, line, c, f):
@@ -225,18 +253,27 @@ def isValid(ex):
            isValidAux(ex, ex.oe, 3) and isValidAux(ex, ex.eo, 4)
 
 
-def solve(ex, y):
-    for y in range(y, ex.dim):
-        for x in range(ex.dim):
+def solve(ex, y, x):
+    flag = True
+    dim = ex.dim
+    if x >= dim:
+        x = 0
+        y += 1
+    if y >= dim:
+        y -= 1
+    for y in range(y, dim):
+        if not flag:
+            x = 0
+        for x in range(x, dim):
             if ex.mapa[y][x] is None:
-                for n in range(1, ex.dim + 1):
+                for n in ex.possiveis[y][x]:
                     if isPossible(ex, y, x, n):
                         ex.mapa[y][x] = n
-                        sol = solve(ex, y)
+                        sol = solve(ex, y, x + 1)
                         if sol is not None:
                             return sol
                         ex.mapa[y][x] = None
                 return
+            flag = False
     if isValid(ex):
-        sol = (copy.deepcopy(ex.mapa))
-        return sol
+        return ex.mapa
