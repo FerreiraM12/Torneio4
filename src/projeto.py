@@ -65,7 +65,7 @@ def projeto(m, t, b, l, r):
     ex = bairro(m, t, b, l, r)
     casosImediatos(ex)
     fillTheGap(ex)
-    m = solve(ex)
+    m = solve(ex, 0)
     return m
 
 
@@ -225,14 +225,14 @@ def isValid(ex):
            isValidAux(ex, ex.oe, 3) and isValidAux(ex, ex.eo, 4)
 
 
-def solve(ex):
-    for y in range(ex.dim):
+def solve(ex, y):
+    for y in range(y, ex.dim):
         for x in range(ex.dim):
             if ex.mapa[y][x] is None:
                 for n in range(1, ex.dim + 1):
                     if isPossible(ex, y, x, n):
                         ex.mapa[y][x] = n
-                        sol = solve(ex)
+                        sol = solve(ex, y)
                         if sol is not None:
                             return sol
                         ex.mapa[y][x] = None
